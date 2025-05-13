@@ -1,0 +1,207 @@
+:root {
+  --primary-dark: #121212;
+  --secondary-dark: #1e1e1e;
+  --accent-color: #ff4d00;
+  --accent-hover: #ff6a33;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --border-color: #333333;
+  --card-bg: #252525;
+  --input-bg: #2e2e2e;
+}
+
+/* Title Container */
+.analytics-title-container {
+  text-align: center;
+  margin-top: 32px;
+  margin-bottom: 24px;
+}
+
+/* Main Title */
+.analytics-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--accent-color);
+  text-shadow: 2px 2px 8px rgba(255, 77, 0, 0.15);
+  background: linear-gradient(to right, var(--accent-color), #ff9500);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Main Container */
+.analytics-container {
+  width: 95%;
+  max-width: 1200px;
+  margin: 20px auto;
+  background: var(--primary-dark);
+  border-radius: 15px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-primary);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      rgba(255, 77, 0, 0.07) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(255, 77, 0, 0.09) 0%,
+      transparent 60%
+    );
+  padding: 24px 18px;
+}
+
+/* Workout Frequency Paragraph */
+.workout-frequency {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+}
+
+/* AI Analysis Section */
+.ai-analysis-section {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* Analyze with AI Button */
+.ai-analyze-btn {
+  background-color: var(--accent-color);
+  color: var(--primary-dark);
+  padding: 12px 24px;
+  border: none;
+  border-radius: 7px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(255, 77, 0, 0.1);
+}
+
+.ai-analyze-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-analyze-btn:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+  color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* AI Insights Container */
+.ai-insights {
+  margin-top: 18px;
+  font-size: 1.05rem;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  padding: 16px 18px;
+  border-radius: 10px;
+  line-height: 1.5;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* Muscle Group Section */
+.muscle-group-section {
+  margin-bottom: 24px;
+  padding: 18px;
+  background: var(--secondary-dark);
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.muscle-group-section h4 {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  font-weight: bold;
+  margin-bottom: 10px;
+  border-bottom: 2px solid var(--accent-color);
+  padding-bottom: 8px;
+  text-align: center;
+}
+
+/* Exercise Grid */
+.exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
+/* Exercise Card */
+.exercise-card {
+  padding: 14px 10px;
+  background: var(--card-bg);
+  cursor: pointer;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.exercise-card:hover {
+  background: var(--input-bg);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 18px rgba(255, 77, 0, 0.12);
+}
+
+.exercise-card h5 {
+  font-size: 1.15rem;
+  color: var(--accent-color);
+  font-weight: bold;
+  margin: 0;
+  transition: color 0.2s;
+}
+
+.exercise-card h5:hover {
+  color: var(--accent-hover);
+}
+
+/* Exercise Details */
+.exercise-details {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.exercise-details ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 10px;
+  transition: all 0.2s;
+}
+
+.exercise-details ul li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  padding: 10px;
+  background: var(--input-bg);
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.13);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .analytics-container {
+    padding: 10px 2px;
+  }
+  .analytics-title {
+    font-size: 1.3rem;
+  }
+  .muscle-group-section {
+    padding: 10px;
+  }
+  .exercise-card {
+    padding: 10px 4px;
+    font-size: 0.95rem;
+  }
+}

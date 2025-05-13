@@ -1,0 +1,186 @@
+:root {
+  --primary-dark: #121212;
+  --secondary-dark: #1e1e1e;
+  --accent-color: #ff4d00;
+  --accent-hover: #ff6a33;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --border-color: #333333;
+  --card-bg: #252525;
+  --input-bg: #2e2e2e;
+}
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--primary-dark);
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      rgba(255, 77, 0, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(255, 77, 0, 0.1) 0%,
+      transparent 50%
+    );
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 500px;
+  padding: 40px;
+  background-color: var(--secondary-dark);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-color);
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.gym-logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+  background: linear-gradient(to right, var(--accent-color), #ff9500);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gym-line {
+  height: 4px;
+  width: 100px;
+  background: linear-gradient(90deg, var(--accent-color), transparent);
+  margin: 0 auto;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(255, 77, 0, 0.2);
+}
+
+.input-field::placeholder {
+  color: #555;
+}
+
+select.input-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.action-btn {
+  padding: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.action-btn:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 77, 0, 0.3);
+}
+
+.toggle-btn {
+  padding: 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  background-color: transparent;
+  border: 2px solid var(--accent-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.toggle-btn:hover {
+  background-color: rgba(255, 77, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .login-container {
+    padding: 30px 20px;
+  }
+
+  .card-title {
+    font-size: 1.8rem;
+  }
+
+  .button-container {
+    flex-direction: column;
+  }
+
+  .action-btn,
+  .toggle-btn {
+    width: 100%;
+  }
+}
