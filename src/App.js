@@ -5,30 +5,47 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import LoginPage from "./LoginPage";
-import HomePage from "./HomePage";
-import { getCurrentUser, signOut } from "./CognitoService";
+import LoginPage from "./LoginPage"; // Assuming LoginPage.js is in the same directory
+import HomePage from "./HomePage"; // Assuming HomePage.js is in the same directory
+import { getCurrentUser } from "./CognitoService"; // Assuming CognitoService.js is in the same directory
+import { ToastContainer } from "react-toastify";
 
 const App = () => {
+  // State to manage authentication status
+  // Initializes from localStorage to persist login state across sessions
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem("isAuthenticated") === "true";
   });
 
+  // Effect to check current user status on component mount
   useEffect(() => {
-    const email = getCurrentUser();
-    const authenticated = !!email;
+    // Assuming getCurrentUser() synchronously returns the user or null
+    const user = getCurrentUser();
+    const authenticated = !!user; // True if user object exists, false otherwise
     setIsAuthenticated(authenticated);
     localStorage.setItem("isAuthenticated", authenticated.toString());
   }, []);
-
+  // Handler for user logout
   const handleLogout = () => {
-    signOut();
+    // signOut(); // Call Cognito sign out utility
     setIsAuthenticated(false);
     localStorage.setItem("isAuthenticated", "false");
+    // No need to navigate here, the Navigate component below will handle it
   };
 
   return (
     <Router>
+      {/* ToastContainer for displaying notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        draggable
+        pauseOnHover
+      />
       <Routes>
         <Route
           path="/login"
@@ -47,10 +64,20 @@ const App = () => {
           //   isAuthenticated ? (
           //     <HomePage onLogout={handleLogout} />
           //   ) : (
-          //     <Navigate to="/login" />
+          //     <Navigate to="/login" replace /> // Use replace to avoid back button to home
           //   )
           // }
-          element={<HomePage />}
+          element={<HomePage onLogout={handleLogout} />}
+        />
+        <Route
+          path="/home"
+          element={
+            isAuthenticated ? (
+              <HomePage onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace /> // Use replace to avoid back button to home
+            )
+          }
         />
         <Route
           path="*"

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { toast } from "react-toastify";
 import axios from "axios";
 import {
   Chart as ChartJS,
@@ -9,11 +10,12 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler, // Import Filler for area under line
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import "./WorkoutAnalytics.css";
+import "./WorkoutAnalytics.css"; // Assuming CSS is in the same folder
 
-// Register Chart.js components for react-chartjs-2
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -21,132 +23,196 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler // Register Filler
 );
 
-// Convert AI's markdown-like text into basic HTML
+// Helper to format AI's markdown-like text into basic HTML
 const formatAIText = (text) => {
+  if (!text) return "";
   let formatted = text;
+  // Headings (e.g., ### Title)
   formatted = formatted.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+  // Bold text (e.g., **Bold**)
   formatted = formatted.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  // List items (e.g., - Item) - ensure it handles nested lists if AI generates them
+  // This simple regex will wrap consecutive <li> into one <ul>
   formatted = formatted.replace(/^- (.*)$/gm, "<li>$1</li>");
   formatted = formatted.replace(
     /(<li>.*?<\/li>)+/gs,
     (match) => `<ul>${match}</ul>`
   );
+  // Paragraphs (simple line breaks, can be enhanced)
+  formatted = formatted.replace(/\n/g, "<br />");
+  // Remove <br /> inside <ul> or <ol> if it's directly after <li>
+  formatted = formatted.replace(/<li><br \/>/g, "<li>");
+  formatted = formatted.replace(/<br \/>\s*<ul>/g, "<ul>");
+  formatted = formatted.replace(/<\/ul><br \/>/g, "</ul>");
+
   return formatted;
 };
 
-// A reusable chart sub-component to show progression for a single exercise
-const ProgressionChart = ({ progression }) => {
-  // Sort by date (oldest to newest) so chart lines go in correct order
-  const sortedProg = [...progression].sort((a, b) => a.date - b.date);
-
-  // Build arrays for the chart
-  const labels = sortedProg.map((entry) =>
-    entry.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+// Reusable chart sub-component for exercise progression
+const ProgressionChart = ({ progressionData, exerciseName }) => {
+  // Sort by date (oldest to newest)
+  const sortedProgression = useMemo(
+    () =>
+      [...(progressionData || [])].sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      ),
+    [progressionData]
   );
-  const totalVolumeData = sortedProg.map((entry) =>
+
+  const labels = sortedProgression.map((entry) =>
+    new Date(entry.date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })
+  );
+  const totalVolumeData = sortedProgression.map((entry) =>
     entry.totalVolume.toFixed(2)
   );
-  const avgVolumeData = sortedProg.map((entry) =>
+  const avgVolumePerSetData = sortedProgression.map((entry) =>
     entry.avgVolumePerSet.toFixed(2)
   );
-  // We'll store max weight as positive only
-  const maxWeightData = sortedProg.map((entry) =>
+  const maxWeightData = sortedProgression.map((entry) =>
     Math.abs(entry.maxWeight).toFixed(2)
-  );
+  ); // Use absolute for chart
 
-  // Chart.js dataset config
+  // Theme colors (ideally from CSS variables, but hardcoded for simplicity here)
+  const textColor =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--text-primary")
+      .trim() || "#FFFFFF";
+  const borderColor =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--border-color")
+      .trim() || "#333333";
+  const accentColor =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--accent-color")
+      .trim() || "#FF4D00";
+  const blueColor = "#007bff"; // Example color
+  const greenColor = "#28a745"; // Example color
+
   const data = {
     labels,
     datasets: [
       {
-        label: "Total Volume (kg)",
+        label: "Total Volume (kg/lbs)", // Make unit dynamic if possible
         data: totalVolumeData,
         yAxisID: "yVolume",
-        borderColor: "#007bff",
-        backgroundColor: "rgba(0, 123, 255, 0.3)",
-        tension: 0.2,
+        borderColor: blueColor,
+        backgroundColor: "rgba(0, 123, 255, 0.1)", // Lighter fill
+        tension: 0.3,
+        fill: true,
       },
       {
-        label: "Avg Volume/Set (kg)",
-        data: avgVolumeData,
+        label: "Avg Volume/Set (kg/lbs)",
+        data: avgVolumePerSetData,
         yAxisID: "yVolume",
-        borderColor: "#28a745",
-        backgroundColor: "rgba(40, 167, 69, 0.3)",
-        tension: 0.2,
+        borderColor: greenColor,
+        backgroundColor: "rgba(40, 167, 69, 0.1)",
+        tension: 0.3,
+        fill: true,
       },
       {
-        label: "Max Weight (kg)",
+        label: "Max Weight Lifted (kg/lbs)",
         data: maxWeightData,
         yAxisID: "yWeight",
-        borderColor: "#ff6347",
-        backgroundColor: "rgba(255, 99, 71, 0.3)",
-        tension: 0.2,
+        borderColor: accentColor, // Use accent color from theme
+        backgroundColor: "rgba(255, 77, 0, 0.1)",
+        tension: 0.3,
+        fill: true,
       },
     ],
   };
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, // Make chart flexible in container
+    maintainAspectRatio: false,
     interaction: {
       mode: "index",
       intersect: false,
     },
     scales: {
+      x: {
+        ticks: { color: textColor },
+        grid: { color: borderColor },
+      },
       yVolume: {
         type: "linear",
         display: true,
         position: "left",
+        title: { display: true, text: "Volume (kg/lbs)", color: textColor },
+        ticks: { color: textColor },
+        grid: { color: borderColor },
       },
       yWeight: {
         type: "linear",
         display: true,
         position: "right",
-        grid: {
-          drawOnChartArea: false, // keep volumes and weight separate
-        },
+        title: { display: true, text: "Weight (kg/lbs)", color: textColor },
+        ticks: { color: textColor },
+        grid: { drawOnChartArea: false, color: borderColor }, // Avoid grid overlap
       },
     },
     plugins: {
-      legend: { position: "top" },
+      legend: { position: "top", labels: { color: textColor } },
       title: {
-        display: false,
-        text: "Progression Over Time",
+        display: true,
+        text: `Progression for ${exerciseName}`,
+        color: textColor,
+        font: { size: 16 },
+      },
+      tooltip: {
+        backgroundColor: "rgba(0,0,0,0.8)",
+        titleColor: "#fff",
+        bodyColor: "#fff",
+        footerColor: "#fff",
+        padding: 10,
+        cornerRadius: 6,
       },
     },
   };
 
   return (
-    <div className="chart-container">
+    <div
+      className="chart-container"
+      style={{ height: "300px", marginTop: "15px" }}
+    >
+      {" "}
+      {/* Ensure container has height */}
       <Line data={data} options={options} />
     </div>
   );
 };
 
-const WorkoutAnalytics = ({ workouts }) => {
+const WorkoutAnalytics = ({ workouts = [], isLoading: isLoadingWorkouts }) => {
   const [analytics, setAnalytics] = useState({
     muscleGroupAnalytics: {},
     workoutFrequency: "",
   });
-  const [expandedExercises, setExpandedExercises] = useState({});
+  const [expandedExercises, setExpandedExercises] = useState({}); // Tracks expanded state of exercise cards
   const [aiInsights, setAiInsights] = useState("");
-  const [loadingAI, setLoadingAI] = useState(false);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
 
+  // Compute analytics when workouts data changes
   useEffect(() => {
-    if (workouts.length > 0) {
-      computeAnalytics();
+    if (Array.isArray(workouts) && workouts.length > 0) {
+      computeAnalytics(workouts);
+    } else {
+      // Reset analytics if workouts are empty or undefined
+      setAnalytics({ muscleGroupAnalytics: {}, workoutFrequency: "" });
+      setAiInsights(""); // Clear AI insights too
     }
   }, [workouts]);
 
-  // Compute detailed analytics across all workouts
-  const computeAnalytics = () => {
+  const computeAnalytics = (currentWorkouts) => {
     const overallAnalytics = {};
     const workoutDatesSet = new Set();
 
-    // Merges pull/chin variations for simpler grouping
+    // Define exercises to be grouped (e.g., different pull-up variations)
     const pullChinExercises = [
       "Pull Ups",
       "Assisted Pull Ups",
@@ -154,53 +220,71 @@ const WorkoutAnalytics = ({ workouts }) => {
       "Assisted Chin-Ups",
     ];
 
-    // Sort workouts by date (oldest to newest)
-    const sortedWorkouts = [...workouts].sort(
-      (a, b) => new Date(a.workoutDate) - new Date(b.workoutDate)
+    const sortedWorkouts = [...currentWorkouts].sort(
+      (a, b) => new Date(a.workoutDate) - new Date(b.workoutDate) // Oldest to newest for progression
     );
 
-    // Process each workout
     sortedWorkouts.forEach((workout) => {
+      if (!workout || !Array.isArray(workout.exercises)) return; // Skip malformed workouts
       workoutDatesSet.add(workout.workoutDate);
 
-      // Aggregate data for each exercise within the workout
-      const workoutAgg = {};
-      workout.exercises.forEach((exercise) => {
-        let key = `${exercise.muscleGroup}-${exercise.exercise}`;
+      const exercisesInWorkoutAggregated = {}; // Aggregate per exercise within this single workout
 
-        // Combine back exercises under a single "Pull Up + Chin-Up" label
+      workout.exercises.forEach((exercise) => {
+        if (!exercise || !exercise.muscleGroup || !exercise.exercise) return; // Skip malformed exercises
+
+        let baseExerciseName = exercise.exercise;
+        let effectiveMuscleGroup = exercise.muscleGroup;
+
+        // Group similar exercises (e.g., all pull-up types)
         if (
-          exercise.muscleGroup === "Back" &&
+          effectiveMuscleGroup === "Back" &&
           pullChinExercises.includes(exercise.exercise)
         ) {
-          key = "Back-Pull Up + Chin-Up";
+          baseExerciseName = "Pull Up / Chin-Up Variations";
         }
-        if (!workoutAgg[key]) {
-          workoutAgg[key] = {
+        // Add more grouping rules if needed
+
+        const exerciseKey = `${effectiveMuscleGroup}-${baseExerciseName}`;
+
+        if (!exercisesInWorkoutAggregated[exerciseKey]) {
+          exercisesInWorkoutAggregated[exerciseKey] = {
             totalVolume: 0,
             totalSets: 0,
-            maxWeight: Number.NEGATIVE_INFINITY,
+            maxWeight: Number.NEGATIVE_INFINITY, // Use negative infinity for proper max calculation
+            // Store muscle group and exercise name for later reconstruction
+            muscleGroup: effectiveMuscleGroup,
+            exerciseName: baseExerciseName,
           };
         }
+
+        const weightForVolume =
+          exercise.weightType === "bodyweight" ? 0 : Math.abs(exercise.weight); // Use 0 for BW volume if not tracked by weight
         const volume =
-          exercise.sets * exercise.reps * Math.abs(exercise.weight);
-        workoutAgg[key].totalVolume += volume;
-        workoutAgg[key].totalSets += exercise.sets;
-        workoutAgg[key].maxWeight = Math.max(
-          workoutAgg[key].maxWeight,
-          exercise.weight
+          (Number(exercise.sets) || 0) *
+          (Number(exercise.reps) || 0) *
+          (weightForVolume || 0);
+
+        exercisesInWorkoutAggregated[exerciseKey].totalVolume += volume;
+        exercisesInWorkoutAggregated[exerciseKey].totalSets +=
+          Number(exercise.sets) || 0;
+        // Max weight should consider the actual weight lifted, handling assisted as positive for comparison
+        exercisesInWorkoutAggregated[exerciseKey].maxWeight = Math.max(
+          exercisesInWorkoutAggregated[exerciseKey].maxWeight,
+          Math.abs(exercise.weight) // Compare absolute weights
         );
       });
 
-      // Merge current workout's aggregation into overallAnalytics
-      Object.keys(workoutAgg).forEach((key) => {
-        let muscleGroup, exerciseName;
-        if (key === "Back-Pull Up + Chin-Up") {
-          muscleGroup = "Back";
-          exerciseName = "Pull Up / Chin-Up";
-        } else {
-          [muscleGroup, exerciseName] = key.split("-");
-        }
+      // Merge this workout's aggregated data into overall analytics
+      Object.values(exercisesInWorkoutAggregated).forEach((aggData) => {
+        const {
+          muscleGroup,
+          exerciseName,
+          totalVolume,
+          totalSets,
+          maxWeight,
+        } = aggData;
+
         if (!overallAnalytics[muscleGroup]) {
           overallAnalytics[muscleGroup] = {};
         }
@@ -209,180 +293,220 @@ const WorkoutAnalytics = ({ workouts }) => {
             totalVolume: 0,
             totalSets: 0,
             workoutCount: 0,
-            maxWeight: Number.NEGATIVE_INFINITY,
-            progression: [],
+            maxLiftedWeight: Number.NEGATIVE_INFINITY, // Max weight lifted across all sessions
+            progression: [], // To store data points for charts
           };
         }
 
-        const agg = workoutAgg[key];
         const record = overallAnalytics[muscleGroup][exerciseName];
-        record.totalVolume += agg.totalVolume;
-        record.totalSets += agg.totalSets;
+        record.totalVolume += totalVolume;
+        record.totalSets += totalSets;
         record.workoutCount += 1;
-        record.maxWeight = Math.max(record.maxWeight, agg.maxWeight);
+        record.maxLiftedWeight = Math.max(record.maxLiftedWeight, maxWeight);
         record.progression.push({
-          date: new Date(workout.workoutDate),
-          totalVolume: agg.totalVolume,
-          avgVolumePerSet:
-            agg.totalSets > 0 ? agg.totalVolume / agg.totalSets : 0,
-          maxWeight: agg.maxWeight,
+          date: new Date(workout.workoutDate), // Store as Date object
+          totalVolume: totalVolume,
+          avgVolumePerSet: totalSets > 0 ? totalVolume / totalSets : 0,
+          maxWeight: maxWeight, // Max weight for this specific workout session of this exercise
         });
       });
     });
 
-    const totalWorkouts = sortedWorkouts.length;
-    const uniqueDays = workoutDatesSet.size;
-    const workoutFrequency = `You completed ${totalWorkouts} workout(s) on ${uniqueDays} unique day(s).`;
+    const totalWorkoutsCount = sortedWorkouts.length;
+    const uniqueWorkoutDays = workoutDatesSet.size;
+    const workoutFrequency = `You've completed ${totalWorkoutsCount} workout(s) over ${uniqueWorkoutDays} unique day(s).`;
 
-    // Build final analytics for UI
-    const muscleGroupAnalytics = {};
+    const finalMuscleGroupAnalytics = {};
     Object.keys(overallAnalytics).forEach((muscleGroup) => {
-      muscleGroupAnalytics[muscleGroup] = { exercises: {} };
+      finalMuscleGroupAnalytics[muscleGroup] = { exercises: {} };
       Object.keys(overallAnalytics[muscleGroup]).forEach((exerciseName) => {
         const rec = overallAnalytics[muscleGroup][exerciseName];
         const overallAvgVolumePerSet =
           rec.totalSets > 0 ? rec.totalVolume / rec.totalSets : 0;
 
-        // Sort progression by date
-        const sortedProg = rec.progression.sort((a, b) => a.date - b.date);
+        // Sort progression for consistent analysis and charting
+        const sortedProgression = rec.progression.sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        );
 
-        // Basic progression analysis
-        let progressionAnalysis = [];
-        if (sortedProg.length > 1) {
-          const first = sortedProg[0];
-          const last = sortedProg[sortedProg.length - 1];
-          const volumeChangePerc =
-            first.totalVolume === 0
-              ? last.totalVolume * 100
-              : ((last.totalVolume - first.totalVolume) / first.totalVolume) *
-                100;
-          progressionAnalysis.push(
-            `Total volume: ${first.totalVolume.toFixed(
-              2
-            )} kg → ${last.totalVolume.toFixed(
-              2
-            )} kg (${volumeChangePerc.toFixed(2)}% change)`
+        let progressionSummary = [
+          "Not enough data for detailed progression analysis.",
+        ];
+        if (sortedProgression.length > 1) {
+          progressionSummary = [];
+          const firstSession = sortedProgression[0];
+          const lastSession = sortedProgression[sortedProgression.length - 1];
+
+          const volChange = lastSession.totalVolume - firstSession.totalVolume;
+          const volChangePerc =
+            firstSession.totalVolume !== 0
+              ? (volChange / firstSession.totalVolume) * 100
+              : lastSession.totalVolume > 0
+              ? Infinity
+              : 0; // Handle division by zero or no change from zero
+
+          progressionSummary.push(
+            `Volume: ${firstSession.totalVolume.toFixed(
+              1
+            )} → ${lastSession.totalVolume.toFixed(1)} (${
+              volChangePerc !== Infinity
+                ? volChangePerc.toFixed(1) + "%"
+                : "Increased from 0"
+            })`
           );
 
-          let totalPerc = 0,
-            count = 0;
-          for (let i = 1; i < sortedProg.length; i++) {
-            const prev = sortedProg[i - 1].totalVolume;
-            const curr = sortedProg[i].totalVolume;
-            const changePerc =
-              prev === 0 ? curr * 100 : ((curr - prev) / prev) * 100;
-            totalPerc += changePerc;
-            count++;
-          }
-          progressionAnalysis.push(
-            `Average change between workouts: ${(totalPerc / count).toFixed(
-              2
-            )}%`
+          const weightChange = lastSession.maxWeight - firstSession.maxWeight;
+          const weightChangePerc =
+            firstSession.maxWeight !== 0
+              ? (weightChange / firstSession.maxWeight) * 100
+              : lastSession.maxWeight > 0
+              ? Infinity
+              : 0;
+          progressionSummary.push(
+            `Max Weight: ${firstSession.maxWeight.toFixed(
+              1
+            )} → ${lastSession.maxWeight.toFixed(1)} (${
+              weightChangePerc !== Infinity
+                ? weightChangePerc.toFixed(1) + "%"
+                : "Increased from 0"
+            })`
           );
-        } else {
-          progressionAnalysis.push("Not enough data for progression analysis.");
         }
 
-        const summaryMetrics = [
-          `Total Volume: ${rec.totalVolume.toFixed(2)} kg`,
-          `Average Volume/Workout: ${(
-            rec.totalVolume / rec.workoutCount
-          ).toFixed(2)} kg`,
-          `Average Volume/Set: ${overallAvgVolumePerSet.toFixed(2)} kg`,
-          `Workout Count: ${rec.workoutCount}`,
-          `Max Weight: ${getWeightLabel(rec.maxWeight)}`,
-          ...progressionAnalysis,
-        ];
-
-        muscleGroupAnalytics[muscleGroup].exercises[exerciseName] = {
-          metrics: summaryMetrics,
-          progression: rec.progression,
+        finalMuscleGroupAnalytics[muscleGroup].exercises[exerciseName] = {
+          metrics: [
+            `Total Volume: ${rec.totalVolume.toFixed(1)}`,
+            `Avg Volume/Workout: ${(rec.totalVolume / rec.workoutCount).toFixed(
+              1
+            )}`,
+            `Avg Volume/Set: ${overallAvgVolumePerSet.toFixed(1)}`,
+            `Performed in: ${rec.workoutCount} workout(s)`,
+            `Heaviest Lifted: ${rec.maxLiftedWeight.toFixed(1)}`, // Using the overall max
+          ],
+          progressionAnalysis: progressionSummary, // Separate progression text
+          progressionData: sortedProgression, // Data for chart
         };
       });
     });
 
     setAnalytics({
-      muscleGroupAnalytics,
+      muscleGroupAnalytics: finalMuscleGroupAnalytics,
       workoutFrequency,
     });
   };
 
-  // Show assisted weight if negative
-  const getWeightLabel = (weight) => {
-    return weight < 0 ? `${Math.abs(weight)} kg (assisted)` : `${weight} kg`;
-  };
-
-  // Toggle detailed view for an exercise, including chart
   const toggleExerciseDetails = (muscleGroup, exerciseName) => {
     const key = `${muscleGroup}-${exerciseName}`;
-    setExpandedExercises((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setExpandedExercises((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Minimal transform for AI analysis
-  const transformWorkouts = (rawWorkouts) =>
+  // Prepare minimal data for AI analysis
+  const transformWorkoutsForAI = (rawWorkouts) =>
     rawWorkouts.map((workout) => ({
       workoutName: workout.workoutName,
       workoutDate: workout.workoutDate,
       exercises: (workout.exercises || []).map((ex) => ({
+        muscleGroup: ex.muscleGroup,
         exercise: ex.exercise,
         sets: ex.sets,
         reps: ex.reps,
-        weight: ex.weight,
+        weight: ex.weight, // AI might infer assisted from negative or need isAssistance
+        weightType: ex.weightType,
         isAssistance: ex.isAssistance,
       })),
     }));
 
   const handleAIAnalysis = async () => {
-    if (!workouts || workouts.length === 0) return;
-    setLoadingAI(true);
-    setAiInsights("Analyzing your workouts with AI...");
+    if (!Array.isArray(workouts) || workouts.length === 0) {
+      toast.info("No workout data available to analyze.");
+      return;
+    }
+    setIsLoadingAI(true);
+    setAiInsights("🧠 Analyzing your workout patterns with AI... Please wait.");
     try {
-      const minimalWorkouts = transformWorkouts(workouts);
+      const minimalWorkouts = transformWorkoutsForAI(workouts);
+      // Ensure the API URL is correctly set in your .env file
+      const apiUrl = process.env.REACT_APP_CHATBOT_API_URL;
+      if (!apiUrl) {
+        throw new Error("Chatbot API URL is not configured.");
+      }
       const response = await axios.post(
-        process.env.REACT_APP_CHATBOT_API_URL,
+        apiUrl,
         {
-          userInput: "Analyze my workouts",
+          // Adjust payload based on your chatbot API's expected structure
+          userInput:
+            "Provide a summary and insights based on my workout history.",
           workoutHistory: minimalWorkouts,
+          // context: "fitness_analysis", // Optional: provide context to AI
         },
         { headers: { "Content-Type": "application/json" } }
       );
-      const aiResponse = response.data?.response || "No insights available.";
+      const aiResponse =
+        response.data?.response ||
+        response.data?.message ||
+        "No specific insights received from AI.";
       setAiInsights(aiResponse);
     } catch (error) {
-      console.error("Error with AI Analysis:", error);
-      setAiInsights(
-        "An error occurred while analyzing. Please try again later."
+      console.error(
+        "Error with AI Analysis:",
+        error.response?.data || error.message || error
       );
+      setAiInsights(
+        `An error occurred during AI analysis: ${error.response?.data?.error ||
+          error.message ||
+          "Please try again later."}`
+      );
+      toast.error("AI Analysis failed.");
     } finally {
-      setLoadingAI(false);
+      setIsLoadingAI(false);
     }
   };
 
-  return (
-    <div>
-      <div className="analytics-title-container">
-        <h3 className="analytics-title">Workout Analytics</h3>
+  if (isLoadingWorkouts) {
+    return (
+      <div className="loading-message analytics-loading">
+        Loading analytics data...
       </div>
+    );
+  }
 
+  if (!Array.isArray(workouts) || workouts.length === 0) {
+    return (
+      <div className="analytics-container">
+        <div className="analytics-title-container">
+          <h3 className="analytics-title">Workout Analytics</h3>
+        </div>
+        <p className="no-workouts-message">
+          No workout data available to analyze. Start logging your workouts!
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="workout-analytics-page">
+      {" "}
+      {/* Added a wrapper class */}
+      <div className="analytics-title-container">
+        <h3 className="analytics-title">Workout Performance Insights</h3>
+      </div>
       <div className="analytics-container">
         <p className="workout-frequency">{analytics.workoutFrequency}</p>
 
-        {/* AI Analysis */}
         <div className="ai-analysis-section">
           <button
             className="ai-analyze-btn"
             onClick={handleAIAnalysis}
-            disabled={loadingAI}
+            disabled={isLoadingAI || !workouts || workouts.length === 0}
+            aria-label="Analyze workouts with Artificial Intelligence"
           >
-            Analyze with AI
+            {isLoadingAI ? "Analyzing..." : "Get AI Insights"}
           </button>
           {aiInsights && (
-            <div className="ai-insights">
-              {loadingAI ? (
-                <span>{aiInsights}</span>
+            <div className="ai-insights" aria-live="polite">
+              <h4>AI Generated Insights:</h4>
+              {isLoadingAI && aiInsights.startsWith("🧠") ? ( // Check if it's the loading message
+                <p>{aiInsights}</p>
               ) : (
                 <div
                   dangerouslySetInnerHTML={{ __html: formatAIText(aiInsights) }}
@@ -392,39 +516,63 @@ const WorkoutAnalytics = ({ workouts }) => {
           )}
         </div>
 
-        {/* Muscle Group Sections */}
         {Object.keys(analytics.muscleGroupAnalytics).map((muscleGroup) => (
           <div key={muscleGroup} className="muscle-group-section">
-            <h4>{muscleGroup}</h4>
+            <h4>{muscleGroup} Performance</h4>
             <div className="exercise-grid">
               {Object.keys(
                 analytics.muscleGroupAnalytics[muscleGroup].exercises
               ).map((exerciseName) => {
-                const { metrics, progression } = analytics.muscleGroupAnalytics[
-                  muscleGroup
-                ].exercises[exerciseName];
-
+                const exerciseData =
+                  analytics.muscleGroupAnalytics[muscleGroup].exercises[
+                    exerciseName
+                  ];
                 const isExpanded =
                   expandedExercises[`${muscleGroup}-${exerciseName}`];
 
                 return (
                   <div
                     key={exerciseName}
-                    className="exercise-card"
+                    className={`exercise-card ${isExpanded ? "expanded" : ""}`}
                     onClick={() =>
                       toggleExerciseDetails(muscleGroup, exerciseName)
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleExerciseDetails(muscleGroup, exerciseName);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={isExpanded}
+                    aria-controls={`details-${muscleGroup}-${exerciseName}`}
                   >
                     <h5>{exerciseName}</h5>
                     {isExpanded && (
-                      <div className="exercise-details show">
+                      <div
+                        className="exercise-details"
+                        id={`details-${muscleGroup}-${exerciseName}`}
+                      >
+                        <h6>Summary:</h6>
                         <ul>
-                          {metrics.map((m, idx) => (
-                            <li key={idx}>{m}</li>
+                          {exerciseData.metrics.map((metric, idx) => (
+                            <li key={`metric-${idx}`}>{metric}</li>
                           ))}
                         </ul>
-                        {/* Chart for progression */}
-                        <ProgressionChart progression={progression} />
+                        <h6>Progression Analysis:</h6>
+                        <ul>
+                          {exerciseData.progressionAnalysis.map((item, idx) => (
+                            <li key={`prog-analysis-${idx}`}>{item}</li>
+                          ))}
+                        </ul>
+                        {exerciseData.progressionData &&
+                          exerciseData.progressionData.length > 0 && (
+                            <ProgressionChart
+                              progressionData={exerciseData.progressionData}
+                              exerciseName={exerciseName}
+                            />
+                          )}
                       </div>
                     )}
                   </div>

@@ -89,7 +89,7 @@ const HomePage = ({ onLogout }) => {
             className={`tab-btn ${activeTab === "analytics" ? "active" : ""}`}
             onClick={() => setActiveTab("analytics")}
           >
-            <i className="icon-stats"></i> ANALYTICS
+            <i className="icon-chart"></i> ANALYTICS
           </button>
         </div>
       </nav>

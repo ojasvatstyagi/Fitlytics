@@ -1,24 +1,13 @@
-:root {
-  --primary-dark: #121212;
-  --secondary-dark: #1e1e1e;
-  --accent-color: #ff4d00;
-  --accent-hover: #ff6a33;
-  --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --border-color: #333333;
-  --card-bg: #252525;
-  --input-bg: #2e2e2e;
-}
-
-/* Main Container */
-.main-container {
-  margin: 40px auto 0 auto;
+/* Main Container for GetWorkouts component */
+.get-workouts-component .main-container {
+  /* Scoped to this component */
+  margin: 20px auto; /* Adjusted margin */
   width: 95%;
   max-width: 1200px;
-  padding: 24px;
+  padding: 20px; /* Adjusted padding */
   background: var(--primary-dark);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  border-radius: 12px; /* Adjusted border-radius */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6); /* Adjusted shadow */
   color: var(--text-primary);
   background-image: radial-gradient(
       circle at 25% 25%,
@@ -33,21 +22,22 @@
 }
 
 /* Section Divider */
-.section-divider {
+.get-workouts-component .section-divider {
   text-align: center;
-  margin: 15px 0 30px 0;
-  padding: 5px 0;
+  margin: 10px 0 25px 0; /* Adjusted margin */
+  padding-bottom: 8px; /* Adjusted padding */
   border-bottom: 2px solid var(--accent-color);
 }
 
 /* Section Heading */
-.section-heading {
-  font-size: 2rem;
+.get-workouts-component .section-heading {
+  font-size: 1.8rem; /* Adjusted font size */
   color: var(--accent-color);
   font-weight: bold;
-  text-shadow: 2px 2px 8px rgba(255, 77, 0, 0.18);
+  text-shadow: 1px 1px 6px rgba(255, 77, 0, 0.15); /* Adjusted shadow */
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px; /* Adjusted margin */
+  /* Gradient text effect */
   background: linear-gradient(to right, var(--accent-color), #ff9500);
   -webkit-background-clip: text;
   background-clip: text;
@@ -55,127 +45,270 @@
 }
 
 /* Workouts Container */
-.workouts-container {
-  padding: 10px;
+.get-workouts-component .workouts-container {
+  padding: 15px; /* Increased padding */
   border-radius: 10px;
   background: var(--secondary-dark);
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* Workout List */
-.workouts-container ul {
+/* Workout List UL */
+.get-workouts-component .workout-list-ul {
   padding: 0;
   list-style: none;
+  margin: 0;
 }
 
-/* Individual workout item */
-.workouts-container li {
-  margin-bottom: 18px;
-  padding: 16px;
+/* Individual workout item LI */
+.get-workouts-component .workout-item-li {
+  margin-bottom: 15px; /* Adjusted margin */
+  padding: 15px; /* Adjusted padding */
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--card-bg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-  transition: transform 0.2s, background 0.2s;
+  transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
   color: var(--text-primary);
 }
 
-.workouts-container li:hover {
-  background: #2e2e2e;
-  transform: scale(1.015);
+.get-workouts-component .workout-item-li:hover {
+  background-color: #2a2a2a; /* Slightly different hover background */
+  transform: translateY(-3px); /* Lift effect */
 }
 
-/* Workout header (Name + Date) */
-.workout-header {
+/* Workout header (Name + Date + Indicator) */
+.get-workouts-component .workout-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
   cursor: pointer;
+  padding: 5px 0; /* Add some padding for easier clicking */
 }
 
-.workout-header h4 {
+.get-workouts-component .workout-header:focus {
+  outline: 2px solid var(--accent-color); /* Focus indicator for accessibility */
+  outline-offset: 2px;
+}
+
+.get-workouts-component .workout-name-display {
+  /* Was h4 */
   color: var(--text-primary);
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 1.1rem; /* Consistent font size */
+  margin: 0; /* Remove default h4 margin */
+  flex-grow: 1; /* Allow name to take available space */
 }
 
-.workout-header .workout-date {
+.get-workouts-component .workout-date-display {
+  /* Was .workout-date */
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.9rem; /* Consistent font size */
+  margin-left: 10px; /* Space from name */
+  white-space: nowrap; /* Prevent date from wrapping */
 }
 
-/* Exercises list */
-.exercise-list {
-  padding-left: 18px;
+.get-workouts-component .expand-indicator {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-left: 10px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.get-workouts-component
+  .workout-header[aria-expanded="true"]
+  .expand-indicator {
+  transform: rotate(90deg);
+}
+
+/* Expanded Workout Details Area */
+.get-workouts-component .workout-details-expanded {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-color);
+}
+.get-workouts-component .workout-details-expanded h5 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--accent-color);
+  font-size: 1rem;
+}
+
+/* Exercises list UL within expanded details */
+.get-workouts-component .exercise-list-ul {
+  padding-left: 0; /* Remove default ul padding */
+  list-style: none; /* Remove bullets */
   margin-top: 8px;
 }
 
-.exercise-list .exercise-item {
-  margin-bottom: 4px;
-  font-size: 0.95rem;
+.get-workouts-component .exercise-item-li {
+  /* Was .exercise-item */
+  margin-bottom: 8px; /* Space between exercises */
+  padding: 8px;
+  font-size: 0.9rem; /* Adjusted font size */
   color: var(--text-secondary);
+  background-color: var(
+    --secondary-dark
+  ); /* Slight background for each exercise item */
+  border-radius: 4px;
+  border: 1px solid #2b2b2b;
+}
+.get-workouts-component .exercise-item-li strong {
+  color: var(--text-primary);
+}
+.get-workouts-component .exercise-item-li .exercise-type-tag {
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.get-workouts-component .exercise-item-li .exercise-type-tag.regular {
+  background-color: rgba(0, 180, 0, 0.2); /* Greenish */
+  color: #00cc00;
+}
+.get-workouts-component .exercise-item-li .exercise-type-tag.assisted {
+  background-color: rgba(255, 77, 0, 0.2); /* Accent color */
+  color: var(--accent-color);
 }
 
-/* Buttons used within the workouts container */
-.workouts-container button {
-  margin-right: 8px;
+/* Action buttons container */
+.get-workouts-component .workout-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px; /* Space between buttons */
+  justify-content: flex-end; /* Align buttons to the right */
+}
+
+/* Common styles for buttons inside .workouts-container */
+.get-workouts-component .workouts-container button,
+.get-workouts-component .workout-actions button {
   background-color: var(--accent-color);
-  color: var(--primary-dark);
+  color: var(--primary-dark); /* Dark text for contrast on accent bg */
   border: none;
-  border-radius: 6px;
-  padding: 8px 18px;
-  font-size: 0.95rem;
+  border-radius: 5px; /* Slightly less rounded */
+  padding: 8px 16px; /* Adjusted padding */
+  font-size: 0.9rem; /* Adjusted font size */
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s, color 0.2s;
+  transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease,
+    box-shadow 0.2s ease;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px; /* Adjusted letter spacing */
+}
+.get-workouts-component .workouts-container button:disabled,
+.get-workouts-component .workout-actions button:disabled {
+  background-color: #555;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
 }
 
-.workouts-container .edit-btn {
+/* Edit Button Specific Styles */
+.get-workouts-component .edit-btn {
   background: transparent;
   color: var(--accent-color);
   border: 2px solid var(--accent-color);
 }
 
-.workouts-container .edit-btn:hover {
-  background: rgba(255, 77, 0, 0.09);
+.get-workouts-component .edit-btn:hover:not(:disabled) {
+  background: rgba(255, 77, 0, 0.1); /* Subtle accent background */
+  color: var(--text-primary); /* Lighter text on hover */
+  transform: translateY(-1px); /* Slight lift */
+  box-shadow: 0 2px 8px rgba(255, 77, 0, 0.2);
+}
+
+/* Delete Button Specific Styles */
+.get-workouts-component .delete-btn {
+  background-color: #c0392b; /* More distinct delete color */
   color: var(--text-primary);
 }
-
-.workouts-container .delete-btn:hover {
-  background-color: var(--accent-hover);
-  color: var(--primary-dark);
-  transform: translateY(-2px);
-}
-
-.workouts-container .delete-btn {
-  background-color: var(--accent-color);
-  color: var(--primary-dark);
+.get-workouts-component .delete-btn:hover:not(:disabled) {
+  background-color: #e74c3c; /* Lighter red on hover */
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 /* No workouts message */
-.no-workouts {
+.get-workouts-component .no-workouts {
   color: var(--text-secondary);
   text-align: center;
-  margin-top: 24px;
-  font-size: 1.1rem;
+  margin-top: 20px; /* Adjusted margin */
+  font-size: 1.05rem; /* Adjusted font size */
+  padding: 20px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  border: 1px dashed var(--border-color);
+}
+.get-workouts-component .no-exercises-in-workout {
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 10px;
 }
 
-/* Responsive */
-@media (max-width: 700px) {
-  .main-container {
-    padding: 10px;
+/* Loading message */
+.get-workouts-component .loading-message {
+  color: var(--text-primary);
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  /* Changed breakpoint for more common usage */
+  .get-workouts-component .main-container {
+    padding: 15px;
   }
-  .section-heading {
+  .get-workouts-component .section-heading {
+    font-size: 1.5rem; /* Adjusted for better fit */
+  }
+  .get-workouts-component .workout-item-li {
+    padding: 12px;
+  }
+  .get-workouts-component .workout-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px; /* Space between name and date when stacked */
+  }
+  .get-workouts-component .workout-date-display {
+    margin-left: 0; /* Remove left margin when stacked */
+  }
+  .get-workouts-component .expand-indicator {
+    align-self: flex-end; /* Keep indicator to the right */
+    position: absolute; /* Position relative to header */
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg); /* Initial position */
+  }
+  .get-workouts-component
+    .workout-header[aria-expanded="true"]
+    .expand-indicator {
+    transform: translateY(-50%) rotate(90deg); /* Rotation when expanded */
+  }
+
+  .get-workouts-component .workout-actions {
+    flex-direction: column; /* Stack buttons on smaller screens */
+    gap: 8px;
+  }
+  .get-workouts-component .workout-actions button {
+    width: 100%; /* Make buttons full width */
+    padding: 10px 12px; /* Adjust padding */
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .get-workouts-component .section-heading {
     font-size: 1.3rem;
   }
-  .workouts-container li {
-    padding: 10px;
+  .get-workouts-component .workout-name-display {
+    font-size: 1rem;
   }
-  .workouts-container button {
-    padding: 8px 10px;
-    font-size: 0.9rem;
+  .get-workouts-component .workout-date-display {
+    font-size: 0.8rem;
   }
 }

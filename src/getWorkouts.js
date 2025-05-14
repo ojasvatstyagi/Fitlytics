@@ -3,113 +3,243 @@ import { toast } from "react-toastify";
 import "./getWorkouts.css";
 import axios from "axios";
 
-const GetWorkouts = ({ workouts, onEditWorkout, onDeleteSuccess }) => {
-  // We store only the expanded workout ID locally
-  const [expandedWorkout, setExpandedWorkout] = useState(null);
+const GetWorkouts = ({
+  workouts = [], // Default to empty array if undefined
+  onEditWorkout,
+  onDataChange, // Renamed from onDeleteSuccess, parent should pass a refresh function
+  isLoading, // To indicate if workouts are currently being fetched
+}) => {
+  const [expandedWorkoutId, setExpandedWorkoutId] = useState(null); // Stores the ID of the expanded workout
+  const [isDeleting, setIsDeleting] = useState(null); // Stores the ID of the workout being deleted
 
-  // Expand/Collapse a workout’s details
+  // Toggles the expanded state of a workout
   const toggleExpandWorkout = (workoutID) => {
-    setExpandedWorkout((prev) => (prev === workoutID ? null : workoutID));
+    setExpandedWorkoutId((prevId) => (prevId === workoutID ? null : workoutID));
   };
 
-  // Optional: If you still want to delete workouts here, we can do it locally,
-  // then call onDeleteSuccess() in the parent to re-fetch or remove from parent’s state.
+  // Handles the deletion of a workout
   const handleDeleteWorkout = async (workoutID) => {
+    // Get userID (email) from localStorage - consider a more robust auth state management
     const userID = localStorage.getItem("email");
     if (!userID) {
-      toast.error("You are not authenticated. Please log in again.");
+      toast.error(
+        "Authentication error: User ID not found. Please log in again."
+      );
       return;
     }
-    if (!window.confirm("Are you sure you want to delete this workout?")) return;
 
+    // Confirmation dialog before deleting
+    if (
+      !window.confirm(
+        "Are you sure you want to permanently delete this workout? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(workoutID); // Indicate deletion is in progress for this specific workout
     try {
-      console.log("Deleting workout with ID:", workoutID, "for user:", userID);
+      console.log(
+        "Attempting to delete workout with ID:",
+        workoutID,
+        "for user:",
+        userID
+      );
       await axios.delete(
         "https://6a29no5ke5.execute-api.us-east-1.amazonaws.com/workoutStage1/deleteWorkout",
         {
+          // Ensure params are correctly structured if backend expects them in query string
+          // For DELETE with body, use `data`: { workoutID, userID }
+          // Based on typical REST, workoutID might be part of URL, and userID for auth.
+          // Assuming backend expects params as query strings for DELETE here:
           params: { workoutID, userID },
         }
       );
       toast.success("Workout deleted successfully.");
-
-      // Option 1: Call parent’s success callback so it can refetch or update its state
-      if (typeof onDeleteSuccess === "function") {
-        onDeleteSuccess();
+      if (typeof onDataChange === "function") {
+        onDataChange(); // Trigger data refresh in the parent component
+      }
+      if (expandedWorkoutId === workoutID) {
+        setExpandedWorkoutId(null); // Collapse if the deleted workout was expanded
       }
     } catch (error) {
       console.error("Error deleting workout:", error.response || error);
-      toast.error("Failed to delete workout. Please try again.");
+      const apiErrorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "An unexpected error occurred.";
+      toast.error(`Failed to delete workout: ${apiErrorMessage}`);
+    } finally {
+      setIsDeleting(null); // Reset deletion indicator
     }
   };
 
   // Sort workouts by date in descending order (most recent first)
-  const sortedWorkouts = workouts
-    ? [...workouts].sort((a, b) => new Date(b.workoutDate) - new Date(a.workoutDate))
+  // Ensure workouts is an array before attempting to sort
+  const sortedWorkouts = Array.isArray(workouts)
+    ? [...workouts].sort(
+        (a, b) => new Date(b.workoutDate) - new Date(a.workoutDate)
+      )
     : [];
 
-  return (
-    <div className="main-container">
-      {/* Section Heading */}
-      <div className="section-divider">
-        <h2 className="section-heading">Your Workouts</h2>
+  if (isLoading) {
+    return (
+      <div className="loading-message">
+        Loading your workouts... Please wait.
       </div>
+    );
+  }
 
-      {/* Past Workouts */}
+  if (!sortedWorkouts.length) {
+    return (
+      <div className="main-container">
+        <div className="section-divider">
+          <h2 className="section-heading">Your Workout History</h2>
+        </div>
+        <p className="no-workouts">
+          No workouts yet. Time to hit the gym and log your first session!
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="main-container get-workouts-component">
+      {" "}
+      {/* Added component-specific class */}
+      <div className="section-divider">
+        <h2 className="section-heading">Your Workout History</h2>
+      </div>
       <div className="workouts-container">
-        {sortedWorkouts && sortedWorkouts.length > 0 ? (
-          <ul className="workout-list">
-            {sortedWorkouts.map((workout) => (
-              <li key={workout.workoutID} className="workout-item">
+        <ul className="workout-list-ul">
+          {" "}
+          {/* Changed class for clarity */}
+          {sortedWorkouts.map((workout) => {
+            const isExpanded = expandedWorkoutId === workout.workoutID;
+            return (
+              <li key={workout.workoutID} className="workout-item-li">
+                {" "}
+                {/* Changed class for clarity */}
                 <div
                   className="workout-header"
                   onClick={() => toggleExpandWorkout(workout.workoutID)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      toggleExpandWorkout(workout.workoutID);
+                    }
+                  }}
+                  role="button" // Make it behave like a button
+                  tabIndex={0} // Make it focusable
+                  aria-expanded={isExpanded}
+                  aria-controls={`workout-details-${workout.workoutID}`}
                 >
-                  <h4 className="workout-title">
-                    {workout.workoutName || "Untitled Workout"} -{" "}
-                    {workout.workoutDate
-                      ? new Date(workout.workoutDate).toLocaleDateString()
-                      : "Unknown Date"}
+                  <h4 className="workout-name-display">
+                    {" "}
+                    {/* Changed class */}
+                    {workout.workoutName || "Untitled Workout"}
                   </h4>
+                  <span className="workout-date-display">
+                    {" "}
+                    {/* Changed class */}
+                    {workout.workoutDate
+                      ? new Date(
+                          workout.workoutDate
+                        ).toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "Unknown Date"}
+                  </span>
+                  <span className="expand-indicator">
+                    {isExpanded ? "▼" : "▶"}
+                  </span>{" "}
+                  {/* Visual indicator */}
                 </div>
-                {/* Expand workout details if this workout is expanded */}
-                {expandedWorkout === workout.workoutID && (
-                  <ul className="exercise-list">
-                    {(workout.exercises || []).map((exercise, index) => (
-                      <li key={index} className="exercise-item">
-                        <strong>{exercise.exercise}</strong> - {exercise.sets}{" "}
-                        sets of {exercise.reps} reps at {exercise.weight}{" "}
-                        {exercise.weightType} (
-                        {exercise.isAssistance ? "Assisted" : "Regular"})
-                      </li>
-                    ))}
-                  </ul>
+                {isExpanded && (
+                  <div
+                    id={`workout-details-${workout.workoutID}`}
+                    className="workout-details-expanded"
+                  >
+                    {" "}
+                    {/* Changed class */}
+                    <h5>Exercises:</h5>
+                    {Array.isArray(workout.exercises) &&
+                    workout.exercises.length > 0 ? (
+                      <ul className="exercise-list-ul">
+                        {" "}
+                        {/* Changed class */}
+                        {workout.exercises.map((exercise, index) => (
+                          <li key={index} className="exercise-item-li">
+                            {" "}
+                            {/* Changed class */}
+                            <strong>{exercise.exercise}</strong> (
+                            {exercise.muscleGroup})
+                            <br />
+                            {exercise.sets} sets × {exercise.reps} reps @{" "}
+                            {exercise.weightType === "bodyweight"
+                              ? "Bodyweight"
+                              : `${Math.abs(exercise.weight)} ${
+                                  exercise.weightType
+                                }`}
+                            <span
+                              className={`exercise-type-tag ${
+                                exercise.isAssistance ? "assisted" : "regular"
+                              }`}
+                            >
+                              ({exercise.isAssistance ? "Assisted" : "Regular"})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="no-exercises-in-workout">
+                        No specific exercises logged for this workout.
+                      </p>
+                    )}
+                    <div className="workout-actions">
+                      <button
+                        className="edit-btn"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent header click when button is clicked
+                          if (typeof onEditWorkout === "function") {
+                            onEditWorkout(workout);
+                          } else {
+                            console.error(
+                              "onEditWorkout prop is not a function"
+                            );
+                            toast.error("Edit function not available.");
+                          }
+                        }}
+                        disabled={isDeleting === workout.workoutID}
+                        aria-label={`Edit workout from ${new Date(
+                          workout.workoutDate
+                        ).toLocaleDateString()}`}
+                      >
+                        Edit Workout
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent header click
+                          handleDeleteWorkout(workout.workoutID);
+                        }}
+                        disabled={isDeleting === workout.workoutID}
+                        aria-label={`Delete workout from ${new Date(
+                          workout.workoutDate
+                        ).toLocaleDateString()}`}
+                      >
+                        {isDeleting === workout.workoutID
+                          ? "Deleting..."
+                          : "Delete Workout"}
+                      </button>
+                    </div>
+                  </div>
                 )}
-                <div className="workout-actions">
-                  <button
-                    className="edit-btn"
-                    onClick={() => {
-                      if (typeof onEditWorkout === "function") {
-                        onEditWorkout(workout);
-                      } else {
-                        console.error("onEditWorkout is not a function");
-                      }
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteWorkout(workout.workoutID)}
-                  >
-                    Delete
-                  </button>
-                </div>
               </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="no-workouts">No workouts found.</p>
-        )}
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

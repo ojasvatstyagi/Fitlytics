@@ -1,16 +1,3 @@
-:root {
-  --primary-dark: #121212;
-  --secondary-dark: #1e1e1e;
-  --accent-color: #ff4d00;
-  --accent-hover: #ff6a33;
-  --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --border-color: #333333;
-  --card-bg: #252525;
-  --input-bg: #2e2e2e;
-  --error-color: #ff3333;
-}
-
 .upload-workout-container {
   width: 100%;
   max-width: 900px;

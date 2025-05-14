@@ -2,37 +2,72 @@ import requests
 import json
 
 def update_exercises(api_url, old_exercise_names, new_exercise_names):
-    """Updates multiple exercises by sending API requests for each name change."""
+    """
+    Updates multiple exercises by sending API requests for each name change.
+
+    Args:
+        api_url (str): The URL of the API endpoint for updating exercise names.
+        old_exercise_names (list): A list of current exercise names to be updated.
+        new_exercise_names (list): A list of new exercise names corresponding to the old names.
+    """
+    # Ensure the lists of old and new names are of the same length
     if len(old_exercise_names) != len(new_exercise_names):
         print("Error: The lists of old and new exercise names must be the same length.")
         return
 
+    # Set the headers for the HTTP request
     headers = {'Content-Type': 'application/json'}
 
+    # Iterate through each old and new exercise name pair
     for old_name, new_name in zip(old_exercise_names, new_exercise_names):
+        # Construct the payload for the API request
         payload = {
             "old_exercise_name": old_name,
             "new_exercise_name": new_name
         }
 
-        print("\nSending request to:", api_url)
+        print(f"\nAttempting to update '{old_name}' to '{new_name}'...")
+        print("Sending request to:", api_url)
+        # Print the payload in a readable JSON format
         print("Payload:", json.dumps(payload, indent=2))
         
         try:
+            # Send the POST request to the API
             response = requests.post(api_url, json=payload, headers=headers)
-            response.raise_for_status()  # Raise an error for bad responses
-            print("Update successful:", response.json())
-        except requests.exceptions.HTTPError as err:
-            print("HTTP error occurred:", err)
-            print("Response content:", response.text)  # Print full response for debugging
-        except Exception as e:
-            print("An error occurred:", e)
+            # Raise an HTTPError for bad responses (4xx or 5xx)
+            response.raise_for_status() 
+            
+            # Print success message and the JSON response from the server
+            print("Update successful for:", old_name)
+            try:
+                print("Response:", response.json())
+            except json.JSONDecodeError:
+                print("Response content (not JSON):", response.text)
 
-# API Gateway URL
+        except requests.exceptions.HTTPError as http_err:
+            # Handle HTTP errors (e.g., 404 Not Found, 500 Server Error)
+            print(f"HTTP error occurred while updating '{old_name}': {http_err}")
+            print("Response status code:", response.status_code)
+            print("Response content:", response.text) # Print full response for debugging
+        except requests.exceptions.ConnectionError as conn_err:
+            # Handle errors related to network connectivity
+            print(f"Connection error occurred while updating '{old_name}': {conn_err}")
+        except requests.exceptions.Timeout as timeout_err:
+            # Handle request timeout errors
+            print(f"Timeout error occurred while updating '{old_name}': {timeout_err}")
+        except requests.exceptions.RequestException as req_err:
+            # Handle other request-related errors
+            print(f"An unexpected error occurred with the request for '{old_name}': {req_err}")
+        except Exception as e:
+            # Handle any other unforeseen errors
+            print(f"An general error occurred while processing '{old_name}': {e}")
+
+# API Gateway URL for changing exercise names
 api_url = "https://6a29no5ke5.execute-api.us-east-1.amazonaws.com/workoutStage1/changeName"
 
-# **Full Old & New Exercise Name Lists**
-'''old_exercise_names = [
+# Full lists of old and new exercise names (currently commented out)
+'''
+old_exercise_names_full = [
     "Pushups", "Assisted Dips", "Dumbbell Bench Press", "Dumbbell Incline Press", "Barbell Bench Press", 
     "Barbell Incline Press", "Chest Press Machine", "Cable Crossovers", "Incline Cable Crossovers", 
     "Decline Cable Crossovers", "Pec Deck", "Squats", "Hack Squat", "Leg Press", "Leg Extensions", 
@@ -53,7 +88,7 @@ api_url = "https://6a29no5ke5.execute-api.us-east-1.amazonaws.com/workoutStage1/
     "External Rotation Vertical", "Rotator Cuff Cable", "Crunch Machine", "V-Crunch Machine", "Oblique Machine"
 ]
 
-new_exercise_names = [
+new_exercise_names_full = [
     "Pushups", "Dips - Machine", "Bench Press - Dumbbell", "Incline Press - Dumbbell", "Bench Press - Barbell", 
     "Incline Press - Barbell", "Chest Press - Machine", "Crossovers - Cables", "Incline Crossovers - Cables", 
     "Decline Crossovers - Cables", "Pec Deck - Machine", "Squats - Barbell", "Hack Squat - Machine", "Leg Press - Machine", 
@@ -75,7 +110,18 @@ new_exercise_names = [
     "Crunch Machine - Machine", "V-Crunch Machine - Machine", "Oblique - Machine"
 ]
 '''
-old_exercise_names = ["Assisted Dips", "Squats"]
-new_exercise_names = ['Dips', "Smith Machine Squats"]
-# Run the batch update
-update_exercises(api_url, old_exercise_names, new_exercise_names)
+
+# Shorter lists for testing or specific updates
+old_exercise_names_test = ["Assisted Dips", "Squats"]
+new_exercise_names_test = ['Dips', "Smith Machine Squats"]
+
+# To run with the full list, uncomment the full lists above and comment out the test lists.
+# Then, use old_exercise_names_full and new_exercise_names_full in the function call.
+# Example for full list:
+# update_exercises(api_url, old_exercise_names_full, new_exercise_names_full)
+
+# Run the batch update with the test lists
+if __name__ == "__main__":
+    print("Starting exercise name update process...")
+    update_exercises(api_url, old_exercise_names_test, new_exercise_names_test)
+    print("\nExercise name update process finished.")
