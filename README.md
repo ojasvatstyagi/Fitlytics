@@ -1,29 +1,91 @@
-# AWS Fitness Tracker
+# 🏅 IRON TRACKER: AWS-Powered Fitness Logging App
 
-A Fitness Tracker Website built to explore and utilize Amazon Web Services and its various offerings.
+A secure, intelligent, and serverless fitness application built using ReactJS for the frontend and **9 AWS Free Tier services** in the backend.
 
-## Functionalities (as of 04/01):
+---
 
-- Account creation with email
-- Sign-in and sign-out
-- Adding workouts to the database
-- Viewing past workouts
-- Chatting with a chatbot about fitness and workouts, with topic filtering relevant to fitness
-- Options to delete and modify past workouts
-- Simple workout analytics
+## 🔍 Features
 
-## Technologies Used:
+- **User sign-up/sign-in with AWS Cognito**
+- Securely log, edit, view, and delete workouts
+- Get smart insights with AI chatbot (OpenAI + Lambda)
+- AI-generated workout summaries translated to local languages using Amazon Translate
+- Hear responses aloud using Amazon Polly
+- Email notifications via SNS when workouts are saved
+- Data stored in DynamoDB
+- REST API using API Gateway + Lambda
+- Monitoring via CloudWatch Logs
 
-- **Front-end**: React, HTML, CSS, JavaScript
-- **Back-end**: AWS Lambda (Node.js) and API Gateway for API calls
-- **Storage**: S3 for storing build files, DynamoDB for workout storage
-- **Hosting**: CloudFront
-- **Monitoring**: CloudWatch
-- **User Management**: Cognito
-- **Chatbot**: OpenAI GPT-3.5 API
+---
 
-## To Be Implemented:
+## 🏠 Hosted Frontend
 
-- Username-based account creation and login
-- Workout suggestions powered by machine learning
-- Hosting on a custom domain using Route 53
+**Live App:** [https://main.abcxyz123.amplifyapp.com](https://main.abcxyz123.amplifyapp.com)
+
+---
+
+## ⚙️ Tech Stack
+
+### Frontend
+
+- ReactJS
+- Axios
+- Toastify for alerts
+
+### Backend
+
+| AWS Service | Purpose                            |
+| ----------- | ---------------------------------- |
+| Cognito     | User Auth (Sign-up, Sign-in)       |
+| Lambda (x5) | Business logic functions           |
+| DynamoDB    | Workout data storage               |
+| API Gateway | REST API for frontend              |
+| SNS         | Email notifications                |
+| CloudWatch  | Logging for Lambda                 |
+| Translate   | Language translation (e.g., Hindi) |
+| Polly       | Text-to-speech audio               |
+
+---
+
+## ✅ Setup Instructions
+
+1. **Clone the Repo**
+   ```
+   git clone https://github.com/your-username/fitness-tracker-app.git
+   cd fitness-tracker-app
+   ```
+2. **Install Packages**
+   ```
+   npm install
+   ```
+3. **Create `.env` File**
+   ```
+   REACT_APP_CLIENT_ID=your-cognito-app-client-id
+   REACT_APP_COGNITO_REGION=us-east-1
+   REACT_APP_API_BASE=https://your-api-id.execute-api.us-east-1.amazonaws.com/workoutStage1
+   REACT_APP_CHATBOT_API_URL=https://your-api-id.execute-api.us-east-1.amazonaws.com/workoutStage1/analyzeWorkouts
+   ```
+4. **Run Locally**
+   ```
+   npm start
+   ```
+5. **Build for Production**
+   ```
+   npm run build
+   ```
+   Deploy the `build` folder to AWS Amplify or Firebase.
+
+---
+
+## ⚡ Demo Walkthrough
+
+1. Register new user
+2. Log in with Cognito
+3. Log new workout → SNS email alert
+4. View/edit/delete workout from history
+5. Open AI Assistant → Ask questions
+6. Translate and hear insights (Translate + Polly)
+
+---
+
+## 📚 Architecture Overview
