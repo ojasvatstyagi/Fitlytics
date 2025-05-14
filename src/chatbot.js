@@ -112,7 +112,8 @@ function Chatbot({ workouts = [], userEmail: propUserEmail }) {
     setIsLoading(true);
 
     try {
-      const apiUrl = process.env.REACT_APP_CHATBOT_API_URL;
+      const apiUrl = `${process.env.REACT_APP_API_BASE}/analyzeWorkouts`;
+
       if (!apiUrl) {
         console.error(
           "Chatbot API URL (REACT_APP_CHATBOT_API_URL) is not configured."

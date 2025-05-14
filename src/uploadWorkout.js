@@ -376,9 +376,10 @@ const UploadWorkout = ({
     };
 
     // Determine API endpoint based on whether it's a new workout or an update
+    const API_BASE = process.env.REACT_APP_API_BASE;
     const url = editingWorkout
-      ? `https://6a29no5ke5.execute-api.us-east-1.amazonaws.com/workoutStage1/updateWorkout`
-      : `https://6a29no5ke5.execute-api.us-east-1.amazonaws.com/workoutStage1/saveWorkout`;
+      ? `${API_BASE}/updateWorkout`
+      : `${API_BASE}/saveWorkout`;
 
     try {
       console.log(

@@ -20,17 +20,17 @@ const HomePage = ({ onLogout }) => {
   }, [refreshTrigger]);
 
   const fetchAllWorkouts = async () => {
-    const email = localStorage.getItem("email");
+    const email = localStorage.getItem("userEmail"); // <-- safer key
     if (!email) {
       console.error("No user email found in localStorage.");
       return;
     }
 
     try {
-      const response = await axios.get(
-        "https://6a29no5ke5.execute-api.us-east-1.amazonaws.com/workoutStage1/GetPastWorkouts",
-        { params: { email } }
-      );
+      const API_BASE = process.env.REACT_APP_API_BASE;
+      const response = await axios.get(`${API_BASE}/GetPastWorkouts`, {
+        params: { email },
+      });
       if (Array.isArray(response.data)) {
         setWorkouts(response.data);
       } else {

@@ -9,7 +9,7 @@ import {
 
 // Initialize Cognito client (adjust region if needed)
 const cognitoClient = new CognitoIdentityProviderClient({
-  region: "us-east-1",
+  region: process.env.REACT_APP_COGNITO_REGION || "us-east-1",
 });
 
 // This should match the App Client ID you configured in AWS Cognito

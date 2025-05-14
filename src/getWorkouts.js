@@ -45,16 +45,12 @@ const GetWorkouts = ({
         "for user:",
         userID
       );
-      await axios.delete(
-        "https://6a29no5ke5.execute-api.us-east-1.amazonaws.com/workoutStage1/deleteWorkout",
-        {
-          // Ensure params are correctly structured if backend expects them in query string
-          // For DELETE with body, use `data`: { workoutID, userID }
-          // Based on typical REST, workoutID might be part of URL, and userID for auth.
-          // Assuming backend expects params as query strings for DELETE here:
-          params: { workoutID, userID },
-        }
-      );
+      const API_BASE = process.env.REACT_APP_API_BASE;
+
+      await axios.delete(`${API_BASE}/deleteWorkout`, {
+        params: { workoutID, userID },
+      });
+
       toast.success("Workout deleted successfully.");
       if (typeof onDataChange === "function") {
         onDataChange(); // Trigger data refresh in the parent component
@@ -142,13 +138,14 @@ const GetWorkouts = ({
                     {" "}
                     {/* Changed class */}
                     {workout.workoutDate
-                      ? new Date(
-                          workout.workoutDate
-                        ).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
+                      ? new Date(workout.workoutDate).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )
                       : "Unknown Date"}
                   </span>
                   <span className="expand-indicator">

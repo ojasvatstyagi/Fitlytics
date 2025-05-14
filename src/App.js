@@ -5,37 +5,40 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import LoginPage from "./LoginPage"; // Assuming LoginPage.js is in the same directory
-import HomePage from "./HomePage"; // Assuming HomePage.js is in the same directory
-import { getCurrentUser } from "./CognitoService"; // Assuming CognitoService.js is in the same directory
+import LoginPage from "./LoginPage";
+import HomePage from "./HomePage";
+import { getCurrentUser } from "./CognitoService";
 import { ToastContainer } from "react-toastify";
 
 const App = () => {
-  // State to manage authentication status
-  // Initializes from localStorage to persist login state across sessions
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem("isAuthenticated") === "true";
   });
 
-  // Effect to check current user status on component mount
+  // Updated to async effect
   useEffect(() => {
-    // Assuming getCurrentUser() synchronously returns the user or null
-    const user = getCurrentUser();
-    const authenticated = !!user; // True if user object exists, false otherwise
-    setIsAuthenticated(authenticated);
-    localStorage.setItem("isAuthenticated", authenticated.toString());
+    const checkUser = async () => {
+      try {
+        const user = await getCurrentUser(); // Await async getCurrentUser
+        const authenticated = !!user;
+        setIsAuthenticated(authenticated);
+        localStorage.setItem("isAuthenticated", authenticated.toString());
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        setIsAuthenticated(false);
+        localStorage.setItem("isAuthenticated", "false");
+      }
+    };
+    checkUser();
   }, []);
-  // Handler for user logout
+
   const handleLogout = () => {
-    // signOut(); // Call Cognito sign out utility
     setIsAuthenticated(false);
     localStorage.setItem("isAuthenticated", "false");
-    // No need to navigate here, the Navigate component below will handle it
   };
 
   return (
     <Router>
-      {/* ToastContainer for displaying notifications */}
       <ToastContainer
         position="top-right"
         autoClose={4000}
@@ -60,22 +63,11 @@ const App = () => {
         />
         <Route
           path="/home"
-          // element={
-          //   isAuthenticated ? (
-          //     <HomePage onLogout={handleLogout} />
-          //   ) : (
-          //     <Navigate to="/login" replace /> // Use replace to avoid back button to home
-          //   )
-          // }
-          element={<HomePage onLogout={handleLogout} />}
-        />
-        <Route
-          path="/home"
           element={
             isAuthenticated ? (
               <HomePage onLogout={handleLogout} />
             ) : (
-              <Navigate to="/login" replace /> // Use replace to avoid back button to home
+              <Navigate to="/login" replace />
             )
           }
         />
