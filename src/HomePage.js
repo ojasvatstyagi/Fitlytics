@@ -19,27 +19,27 @@ const HomePage = ({ onLogout }) => {
     fetchAllWorkouts();
   }, [refreshTrigger]);
 
-  const fetchAllWorkouts = async () => {
-    const email = localStorage.getItem("userEmail"); // <-- safer key
-    if (!email) {
-      console.error("No user email found in localStorage.");
-      return;
-    }
+const fetchAllWorkouts = async () => {
+  const email = localStorage.getItem("email"); // ✅ updated key
+  if (!email) {
+    console.error("No user email found in localStorage.");
+    return;
+  }
 
-    try {
-      const API_BASE = process.env.REACT_APP_API_BASE;
-      const response = await axios.get(`${API_BASE}/GetPastWorkouts`, {
-        params: { email },
-      });
-      if (Array.isArray(response.data)) {
-        setWorkouts(response.data);
-      } else {
-        console.error("Invalid workout data format:", response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching workouts:", error);
+  try {
+    const API_BASE = process.env.REACT_APP_API_BASE;
+    const response = await axios.get(`${API_BASE}/GetPastWorkouts`, {
+      params: { email },
+    });
+    if (Array.isArray(response.data)) {
+      setWorkouts(response.data);
+    } else {
+      console.error("Invalid workout data format:", response.data);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching workouts:", error);
+  }
+};
 
   const handleEditWorkout = (workout) => {
     setEditingWorkout(workout);

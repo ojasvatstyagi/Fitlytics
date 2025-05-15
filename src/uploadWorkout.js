@@ -163,6 +163,7 @@ const UploadWorkout = ({
     if (!editingWorkout) {
       // Only load from local storage if not in edit mode
       const storedWorkout = localStorage.getItem("currentWorkoutDraft");
+      console.log("hello1: "+storedWorkout)
       if (storedWorkout) {
         try {
           const parsedWorkout = JSON.parse(storedWorkout);
@@ -241,6 +242,8 @@ const UploadWorkout = ({
       [field]: value,
     }));
   };
+
+ 
 
   const addOrUpdateExercise = () => {
     const {
@@ -653,6 +656,7 @@ const UploadWorkout = ({
           type="submit"
           className="submit-btn"
           disabled={isSubmitting || exercises.length === 0}
+          onClick={(e)=>handleSubmit(e)}
         >
           {isSubmitting
             ? editingWorkout

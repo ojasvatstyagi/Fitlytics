@@ -132,6 +132,13 @@ const LoginPage = ({ onLogin }) => {
 
     try {
       await signIn(email, password);
+
+// Store email so it's available globally
+      localStorage.setItem("email", email);
+
+// You probably already do this:
+      localStorage.setItem("isAuthenticated", "true");
+
       toast.success("Sign-in successful!");
       onLogin(); // Callback to update App's authentication state
       navigate("/home"); // Navigate to home page

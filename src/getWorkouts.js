@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import "./getWorkouts.css";
 import axios from "axios";
@@ -21,6 +21,7 @@ const GetWorkouts = ({
   const handleDeleteWorkout = async (workoutID) => {
     // Get userID (email) from localStorage - consider a more robust auth state management
     const userID = localStorage.getItem("email");
+    console.log("User ID from localStorage:", userID);
     if (!userID) {
       toast.error(
         "Authentication error: User ID not found. Please log in again."
