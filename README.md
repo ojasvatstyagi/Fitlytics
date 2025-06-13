@@ -1,4 +1,4 @@
-# 🏅 IRON TRACKER: AWS-Powered Fitness Logging App
+# 🏅 Fitlytics: AWS-Powered Workout Progression Dashboard
 
 A secure, intelligent, and serverless fitness application built using ReactJS for the frontend and **9 AWS Free Tier services** in the backend.
 
@@ -42,6 +42,8 @@ A secure, intelligent, and serverless fitness application built using ReactJS fo
 | API Gateway | REST API for frontend              |
 | SNS         | Email notifications                |
 | CloudWatch  | Logging for Lambda                 |
+
+## Future Inhancements:
 | Translate   | Language translation (e.g., Hindi) |
 | Polly       | Text-to-speech audio               |
 
@@ -83,7 +85,7 @@ A secure, intelligent, and serverless fitness application built using ReactJS fo
 2. Log in with Cognito
 3. Log new workout → SNS email alert
 4. View/edit/delete workout from history
-5. Open AI Assistant → Ask questions
+5. Gemini AI Assistant → Ask questions
 6. Translate and hear insights (Translate + Polly)
 
 ---
