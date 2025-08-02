@@ -20,7 +20,7 @@ A secure, intelligent, and serverless fitness application built using ReactJS fo
 
 ## 🏠 Hosted Frontend
 
-**Live App:** [https://staging.dz0wwyjmmqlvu.amplifyapp.com]
+**Live App:** [https://staging.d1j3ptvfzy3mpm.amplifyapp.com]
 
 ---
 
